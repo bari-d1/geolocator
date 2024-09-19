@@ -6,25 +6,67 @@
     <title>Document</title>
     <style>
         .strip{
-            margin-top: 25%;
-            margin-left: 25%;
-            width:450px;
-            height:100px;
+            margin-top: 65%;
+            margin-left: 20%;
+            width: 250px;
+            height: 50px;
             background-color: red;
         }
     </style>
 </head>
 <body>
+    <div class="direction"></div>
     <div class="strip">
 
     </div>
 </body>
 <script>
     const strip = document.querySelector(".strip");
-    navigator.geolocation.watchPosition((data) => {
-        console.log(data);
-        strip.style.transform = `rotate(${data.coords.heading}deg)`
-    })
+    const direction = document.querySelector(".direction");
+    // navigator.geolocation.watchPosition((data) => {
+    //     console.log(data);
+    //     strip.style.transform = `rotate(${data.coords.heading}deg)`
+    //     direction.innerHTML = data.coords.heading
+    // })
+    function handleOrientation(event) {
+    let heading = event.alpha; // alpha represents rotation around the z-axis (0 to 360 degrees)
+        console.log(heading)
+    // Convert to a range between -180 to 180 degrees
+    heading = heading > 180 ? heading - 360 : heading;
 
+    // Clamp the heading between -75 and 75 degrees
+    if (heading > 75) {
+        heading = 75;
+    } else if (heading < -75) {
+        heading = -75;
+    }
+
+    // Apply the rotation to the strip
+    strip.style.transform = `rotate(${heading}deg)`;
+
+    // Display the clamped heading value
+    direction.innerHTML = `Orientation: ${heading.toFixed(2)} degrees`;
+}
+
+// Check if the device is running iOS
+function isIOS() {
+    return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+
+// Request permission for device orientation on iOS 13+
+if (isIOS() && typeof DeviceOrientationEvent.requestPermission === 'function') {
+    DeviceOrientationEvent.requestPermission()
+        .then((response) => {
+            if (response === 'granted') {
+                window.addEventListener('deviceorientation', handleOrientation);
+            } else {
+                direction.innerHTML = "Permission denied for device orientation";
+            }
+        })
+        .catch(console.error);
+} else {
+    // For non-iOS or older iOS versions
+    window.addEventListener('deviceorientation', handleOrientation);
+}
 </script>
 </html>

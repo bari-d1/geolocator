@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .compass {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    border: 5px solid black;
+    border-radius: 50%;
+}
+
+.needle {
+    position: absolute;
+    width: 5px;
+    height: 100px;
+    background-color: red;
+    top: 50%;
+    left: 50%;
+    transform-origin: bottom center;
+    transform: translateX(-50%) translateY(-50%);
+}
+
+.direction {
+    margin-top: 20px;
+    font-size: 18px;
+}
+
+    </style>
+</head>
+<body>
+    <div class="compass">
+        <div class="needle"></div>
+    </div>
+    <p class="direction">Heading: 0°</p>
+    
+</body>
+<script>
+ const needle = document.querySelector(".needle");
+const directionText = document.querySelector(".direction");
+
+// Function to handle device orientation
+function handleOrientation(event) {
+    let heading = event.alpha;
+
+    if (event.absolute) {
+        // Reverse heading to match compass behavior (0° is north)
+        heading = 360 - heading;
+    }
+
+    // Apply rotation to the compass needle
+    needle.style.transform = `rotate(${heading}deg)`;
+
+    // Display the current heading in degrees
+    directionText.innerHTML = `Heading: ${heading.toFixed(2)}°`;
+}
+
+// Check if the device is running iOS and request permission if necessary
+function isIOS() {
+    return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+
+if (isIOS() && typeof DeviceOrientationEvent.requestPermission === 'function') {
+    DeviceOrientationEvent.requestPermission()
+        .then((response) => {
+            if (response === 'granted') {
+                window.addEventListener('deviceorientationabsolute', handleOrientation);
+            } else {
+                directionText.innerHTML = "Permission denied for device orientation";
+            }
+        })
+        .catch((error) => {
+            console.error("DeviceOrientation permission error:", error);
+        });
+} else {
+    // Add the event listener for non-iOS devices or older versions
+    window.addEventListener('deviceorientationabsolute', handleOrientation);
+}
+
+</script>
+</html>
